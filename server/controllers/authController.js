@@ -47,8 +47,15 @@ export const loginUser = async (req, res) => {
             return res.status(401).json({ success: false, message: "Invalid credentials" });
         }
 
-          const tokens = generateTokens(user._id);
-          await saveToken(user._id, tokens.refreshToken);
+        const tokens = generateTokens(user._id);
+        await saveToken(user._id, tokens.refreshToken);
+
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
 
         res.status(200).json({ success: true, message: "User logged in successfully", data: user, ...tokens });
     } catch (error) {
@@ -72,7 +79,7 @@ export const refreshToken = async (req, res) => {
 
         const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
         const newTokens = generateTokens(decoded.id);
-        
+
         await removeToken(refreshToken);
         await saveToken(decoded.id, newTokens.refreshToken);
 
