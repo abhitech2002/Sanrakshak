@@ -13,7 +13,12 @@ const generateTokens = (userId) => {
     { expiresIn: '7d' }
   );
 
-  return { accessToken, refreshToken };
+  return { 
+    accessToken, 
+    refreshToken,
+    accessTokenExpiry: 15 * 60, // seconds
+    refreshTokenExpiry: 7 * 24 * 60 * 60 // seconds 
+  };
 };
 
 export default generateTokens;
