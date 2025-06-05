@@ -1,15 +1,31 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const RegisterPage = () => {
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
+  const [formError, setFormError] = useState('');
+  const { register, loading, error } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setFormError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle register logic here
+    setFormError('');
+    if (!form.name || !form.email || !form.password || !form.confirmPassword) {
+      setFormError('All fields are required.');
+      return;
+    }
+    if (form.password !== form.confirmPassword) {
+      setFormError('Passwords do not match.');
+      return;
+    }
+    const success = await register(form.name, form.email, form.password);
+    if (success) navigate('/');
   };
 
   return (
@@ -165,8 +181,14 @@ const RegisterPage = () => {
                 placeholder="Confirm your password"
               />
             </div>
+            {(formError || error) && (
+              <div style={{ color: '#ff5c5c', marginBottom: '12px', fontSize: '0.95rem' }}>
+                {formError || error}
+              </div>
+            )}
             <button
               type="submit"
+              disabled={loading}
               style={{
                 width: '100%',
                 padding: '12px 0',
@@ -177,13 +199,14 @@ const RegisterPage = () => {
                 fontWeight: 600,
                 fontSize: '1.1rem',
                 letterSpacing: '1px',
-                cursor: 'pointer',
+                cursor: loading ? 'not-allowed' : 'pointer',
                 boxShadow: '0 2px 8px rgba(106, 17, 203, 0.15)',
                 marginBottom: '10px',
                 transition: 'background 0.2s',
+                opacity: loading ? 0.7 : 1,
               }}
             >
-              Register
+              {loading ? "Registering..." : "Register"}
             </button>
           </form>
           <div style={{ marginTop: '10px', color: '#b3b3cc', fontSize: '0.95rem' }}>
