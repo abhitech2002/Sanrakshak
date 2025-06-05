@@ -1,6 +1,31 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
+  const { isAuthenticated, loading, user, logout } = useAuth();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef();
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    }
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [dropdownOpen]);
+
+  const handleLogout = async () => {
+    setDropdownOpen(false);
+    await logout();
+  };
+
   return (
     <nav
       style={{
@@ -37,18 +62,107 @@ const Navbar = () => {
       </div>
       {/* Nav Links */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-        <a href="/" style={navLinkStyle}>
-          Home
-        </a>
-        <a href="/about" style={navLinkStyle}>
-          About
-        </a>
-        <a href="/login" style={navLinkStyle}>
-          Login
-        </a>
-        <a href="/register" style={{ ...navLinkStyle, background: 'linear-gradient(90deg, #a777e3 0%, #6e8efb 100%)', color: '#fff', borderRadius: '8px', padding: '8px 18px', fontWeight: 600 }}>
-          Register
-        </a>
+        {!loading && (
+          <>
+            <a href="/" style={navLinkStyle}>
+              Home
+            </a>
+            <a href="/about" style={navLinkStyle}>
+              About
+            </a>
+            {!isAuthenticated ? (
+              <>
+                <a href="/login" style={navLinkStyle}>
+                  Login
+                </a>
+                <a
+                  href="/register"
+                  style={{
+                    ...navLinkStyle,
+                    background: 'linear-gradient(90deg, #a777e3 0%, #6e8efb 100%)',
+                    color: '#fff',
+                    borderRadius: '8px',
+                    padding: '8px 18px',
+                    fontWeight: 600,
+                  }}
+                >
+                  Register
+                </a>
+              </>
+            ) : (
+              // User icon with dropdown
+              <div style={{ position: 'relative' }} ref={dropdownRef}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    cursor: 'pointer',
+                    userSelect: 'none'
+                  }}
+                  onClick={() => setDropdownOpen((open) => !open)}
+                >
+                  <svg
+                    width="32"
+                    height="32"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#a777e3"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ background: "#fff", borderRadius: "50%", padding: 3 }}
+                  >
+                    <circle cx="12" cy="8" r="4" />
+                    <path d="M4 20c0-2.5 4-4 8-4s8 1.5 8 4" />
+                  </svg>
+                  <span style={{ color: "#fff", fontWeight: 500 }}>
+                    {user?.name || user?.email || "User"}
+                  </span>
+                  <svg width="18" height="18" viewBox="0 0 20 20" fill="#fff" style={{ marginLeft: 2 }}>
+                    <path d="M5.25 7.5L10 12.25L14.75 7.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                {dropdownOpen && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      right: 0,
+                      top: '110%',
+                      background: '#23244a',
+                      borderRadius: 8,
+                      boxShadow: '0 2px 12px rgba(30,32,60,0.18)',
+                      minWidth: 120,
+                      padding: '8px 0',
+                      zIndex: 1000,
+                    }}
+                  >
+                    <button
+                      onClick={handleLogout}
+                      style={{
+                        width: '100%',
+                        background: 'none',
+                        border: 'none',
+                        color: '#fff',
+                        padding: '10px 20px',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        fontWeight: 500,
+                        borderRadius: 6,
+                        transition: 'background 0.2s',
+                      }}
+                      onMouseOver={e => e.currentTarget.style.background = '#35376a'}
+                      onMouseOut={e => e.currentTarget.style.background = 'none'}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
       </div>
     </nav>
   );
