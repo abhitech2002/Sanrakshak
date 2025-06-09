@@ -137,6 +137,23 @@ const Navbar = () => {
                       zIndex: 1000,
                     }}
                   >
+                    <a
+                      href="/profile"
+                      style={{
+                        display: 'block',
+                        color: '#fff',
+                        padding: '10px 20px',
+                        textDecoration: 'none',
+                        fontSize: '1rem',
+                        fontWeight: 500,
+                        borderRadius: 6,
+                        transition: 'background 0.2s',
+                      }}
+                      onMouseOver={e => e.currentTarget.style.background = '#35376a'}
+                      onMouseOut={e => e.currentTarget.style.background = 'none'}
+                    >
+                      Profile
+                    </a>
                     <button
                       onClick={handleLogout}
                       style={{
